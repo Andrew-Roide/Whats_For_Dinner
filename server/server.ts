@@ -11,6 +11,7 @@ import {
 } from './lib/index.js';
 
 type Entry = {
+  id: number;
   dishId: number;
   title: string;
   ingredientId: number;
@@ -53,6 +54,107 @@ app.get('/api/dishes', async (req, res, next) => {
   `;
     const result = await db.query(sql);
     res.status(201).json(result.rows);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post('/api/dishes', async (req, res, next) => {
+  try {
+    const { title, photoUrl } = req.body as Partial<Entry>;
+    if (!title || !photoUrl) {
+      throw new ClientError(400, 'title and photoUrl are required fields');
+    }
+
+    const sql = `
+      insert into "dishes" ("title", "photoUrl")
+      values ($1, $2)
+      returning *;
+    `;
+    const params = [title, photoUrl];
+    const result = await db.query<Entry>(sql, params);
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post('/api/dishes/:dishId/ingredients', async (req, res, next) => {
+  const dishId = Number(req.params.dishId);
+  const { name } = req.body;
+  try {
+    // findOrCreateNewIngredient
+    // find ingredient by name
+    // if true, we have the same ingredient in db - grab the ingredient id --> insert new row in dishIngredients table --> adds the ingredient to the dish
+    // else, you first create a new ingredient (by name)
+
+    const existingIngredient = `
+    select * from "ingredients" where "name" = $1 limit 1;
+  `;
+    const existingIngredientParams = [name];
+    const existingIngredientResult = await db.query<Entry>(
+      existingIngredient,
+      existingIngredientParams
+    );
+
+    let ingredientId;
+
+    if (existingIngredientResult.rows.length > 0) {
+      ingredientId = existingIngredientResult.rows[0].id;
+    } else {
+      const createIngredient = `
+      insert into "ingredients" ("name")
+      values ($1)
+      returning id;
+    `;
+      const createIngredientParams = [name];
+      const createdIngredientResult = await db.query<Entry>(
+        createIngredient,
+        createIngredientParams
+      );
+      ingredientId = createdIngredientResult.rows[0].id;
+    }
+
+    const insertDishIngredient = `
+    insert into "dishIngredients" ("dishId", "ingredientId")
+    values ($1, $2)
+    returning *;
+  `;
+    const insertDishIngredientParams = [dishId, ingredientId];
+    const dishIngredientResult = await db.query<Entry>(
+      insertDishIngredient,
+      insertDishIngredientParams
+    );
+    res.status(201).json(dishIngredientResult.rows[0]);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.put('/api/dishes/:id', async (req, res, next) => {
+  try {
+    const dishesId = Number(req.params.id);
+    const { title, photoUrl } = req.body as Partial<Entry>;
+    if (!Number.isInteger(dishesId) || !title || !photoUrl) {
+      throw new ClientError(
+        400,
+        'dishId, title, and photoUrl are required fields'
+      );
+    }
+    const sql = `
+      update "dishes"
+        set "title" = $1,
+            "photoUrl" = $2
+        where "id" = $3
+        returning *;
+    `;
+    const editEntryParams = [title, photoUrl, dishesId];
+    const editEntryResult = await db.query(sql, editEntryParams);
+    const editDishesId = editEntryResult.rows;
+    if (!editDishesId) {
+      throw new ClientError(404, `Dish with id ${dishesId} not found`);
+    }
+    res.status(201).json(editDishesId[0]);
   } catch (error) {
     next(error);
   }
