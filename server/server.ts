@@ -135,12 +135,14 @@ app.put('/api/dishes/:id', async (req, res, next) => {
   try {
     const dishesId = Number(req.params.id);
     const { title, photoUrl } = req.body as Partial<Entry>;
+    const { name } = req.body;
     if (!Number.isInteger(dishesId) || !title || !photoUrl) {
       throw new ClientError(
         400,
-        'dishId, title, and photoUrl are required fields'
+        'dishesId, title, and photoUrl are required fields'
       );
     }
+
     const sql = `
       update "dishes"
         set "title" = $1,
@@ -151,10 +153,66 @@ app.put('/api/dishes/:id', async (req, res, next) => {
     const editEntryParams = [title, photoUrl, dishesId];
     const editEntryResult = await db.query(sql, editEntryParams);
     const editDishesId = editEntryResult.rows;
-    if (!editDishesId) {
-      throw new ClientError(404, `Dish with id ${dishesId} not found`);
+
+    // find ingredient by name thats being targeted
+    // grab the ingredient id --> delete row in dishIngredients table --> removes the ingredient from the dish
+    const existingIngredient = `
+    select * from "ingredients" where "name" = $1 limit 1;
+  `;
+    const existingIngredientParams = [name];
+    const existingIngredientResult = await db.query<Entry>(
+      existingIngredient,
+      existingIngredientParams
+    );
+    const existingIngredientId = existingIngredientResult.rows[0]?.id;
+    if (existingIngredientId) {
+      const deleteDishIngredientSql = `
+        delete from "dishIngredients"
+          where "dishId" = $1 and "ingredientId" = $2
+      `;
+      const deleteIngredientParams = [dishesId, existingIngredientId];
+      await db.query(deleteDishIngredientSql, deleteIngredientParams);
     }
     res.status(201).json(editDishesId[0]);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.delete('/api/dishes/:id', async (req, res, next) => {
+  try {
+    await db.query('BEGIN');
+
+    try {
+      const dishId = Number(req.params.id);
+      if (!Number.isInteger(dishId)) {
+        throw new ClientError(400, 'dishId must be an integer');
+      }
+      // need to delete the dishesId from dishes AND need to also delete ALL dishIngredient rows containing dishId
+      const deleteDishIdSql = `
+        delete from "dishIngredients"
+          where "dishId" = $1
+        `;
+      const deleteDishIngredientsParams = [dishId];
+      await db.query(deleteDishIdSql, deleteDishIngredientsParams);
+
+      const deleteDishesIdSql = `
+        delete from "dishes"
+          where "id" = $1
+          returning *;
+      `;
+      const deleteDishesIdParams = [dishId];
+      const deleteDishesIdResult = await db.query(
+        deleteDishesIdSql,
+        deleteDishesIdParams
+      );
+
+      await db.query('COMMIT');
+      res.status(201).json(deleteDishesIdResult.rows[0]);
+    } catch (error) {
+      await db.query('ROLLBACK');
+      throw error;
+    }
   } catch (error) {
     next(error);
   }
