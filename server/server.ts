@@ -6,7 +6,7 @@ import { nextTick } from 'node:process';
 import pg from 'pg';
 import {
   ClientError,
-  defaultMiddleware,
+  // defaultMiddleware,
   errorMiddleware,
 } from './lib/index.js';
 
@@ -21,6 +21,7 @@ type Entry = {
 const connectionString =
   process.env.DATABASE_URL ||
   `postgresql://${process.env.RDS_USERNAME}:${process.env.RDS_PASSWORD}@${process.env.RDS_HOSTNAME}:${process.env.RDS_PORT}/${process.env.RDS_DB_NAME}`;
+
 const db = new pg.Pool({
   connectionString,
   ssl: {
@@ -38,6 +39,10 @@ app.use(express.static(reactStaticDir));
 // Static directory for file uploads server/public/
 app.use(express.static(uploadsStaticDir));
 app.use(express.json());
+
+app.listen(process.env.PORT, () => {
+  process.stdout.write(`\n\napp listening on port ${process.env.PORT}\n\n`);
+});
 
 app.get('/api/dishes', async (req, res, next) => {
   try {
@@ -224,10 +229,6 @@ app.delete('/api/dishes/:id', async (req, res, next) => {
  * This must be the _last_ non-error middleware installed, after all the
  * get/post/put/etc. route handlers and just before errorMiddleware.
  */
-app.use(defaultMiddleware(reactStaticDir));
+// app.use(defaultMiddleware(reactStaticDir));
 
 app.use(errorMiddleware);
-
-app.listen(process.env.PORT, () => {
-  process.stdout.write(`\n\napp listening on port ${process.env.PORT}\n\n`);
-});
