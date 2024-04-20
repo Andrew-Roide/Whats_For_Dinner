@@ -11,7 +11,7 @@
 --      ('Get a job', false);
 
 INSERT INTO "dishes" ("photoUrl", "title")
-  VALUES ('https://www.reddit.com/media?url=https%3A%2F%2Fi.redd.it%2F7pt5bpnbagg51.jpg', 'Grilled Cheese');
+  VALUES ('https://i.imgur.com/DTEUr87.jpeg', 'Grilled Cheese');
 
 INSERT INTO "ingredients" ("name")
   VALUES ('white bread'), ('butter'), ('provolone cheese'), ('cheddar cheese');

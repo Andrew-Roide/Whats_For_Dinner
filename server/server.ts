@@ -47,14 +47,17 @@ app.listen(process.env.PORT, () => {
 app.get('/api/dishes', async (req, res, next) => {
   try {
     const sql = `
-    select "dishes"."id" as "dishId",
+      select "dishes"."id" as "dishId",
            "dishes"."title",
            "dishes"."photoUrl",
-           "ingredients"."id" as "ingredientId",
-           "ingredients"."name"
+            JSON_AGG(json_build_object(
+              'ingredientId', "ingredients"."id",
+              'name', "ingredients"."name"
+            )) as "ingredients"
       from "dishes"
       join "dishIngredients" on "dishes"."id" = "dishIngredients"."dishId"
-      join "ingredients" on "dishIngredients"."ingredientId" = "ingredients"."id"
+      join "ingredients" on "ingredients"."id" = "dishIngredients"."ingredientId"
+      group by "dishes"."id", "dishes"."title", "dishes"."photoUrl"
       order by "dishes"."id" desc;
   `;
     const result = await db.query(sql);

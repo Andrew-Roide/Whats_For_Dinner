@@ -1,32 +1,33 @@
-export type PageType = 'home' | 'add-post' | 'sign-in' | 'sign-out';
+export type PageType = 'home' | 'view-dishes' | 'sign-in' | 'sign-out';
 
-// type Props = {
-//   onNavigate: (page: PageType) => void;
-// };
-export default function NavBar() {
+type Props = {
+  onNavigate: (page: PageType) => void;
+};
+
+export default function NavBar({ onNavigate }: Props) {
   return (
     <header className="header">
       <div className="container">
         <div className="row">
-          <div className="column-full d-flex align-center">
+          <div className="column-full">
             <h1 className="main-title">What's For Dinner</h1>
             <h3>
               <button
                 type="button"
-                // onClick={() => onNavigate('home')}
-                className="entries-link white-text">
+                onClick={() => onNavigate('home')}
+                className="entries-link">
                 Home
               </button>
               <button
                 type="button"
-                // onClick={() => onNavigate('add-post')}
-                className="entries-link white-text">
-                Add Post
+                onClick={() => onNavigate('view-dishes')}
+                className="entries-link">
+                View Dishes
               </button>
               <button
                 type="button"
-                // onClick={() => onNavigate('sign-in')}
-                className="entries-link white-text">
+                onClick={() => onNavigate('sign-in')}
+                className="entries-link">
                 Sign In
               </button>
             </h3>
