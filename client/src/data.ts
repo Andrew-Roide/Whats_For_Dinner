@@ -57,3 +57,11 @@ export async function updateDish(dish: Dish): Promise<Dish> {
   if (!res.ok) throw new Error(`Fetch Error ${res.status}`);
   return await res.json();
 }
+
+export async function deleteDish(dishId: number): Promise<void> {
+  const req = {
+    method: 'DELETE',
+  };
+  const res = await fetch(`/api/dishes/${dishId}`, req);
+  if (!res.ok) throw new Error(`Fetch Error ${res.status}`);
+}
