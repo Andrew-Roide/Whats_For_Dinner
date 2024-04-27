@@ -14,6 +14,7 @@ export default function EntryForm({ dish, onSubmit }: Props) {
   const [tempIngredients, setTempIngredients] = useState(
     dish?.tempIngredients ?? ''
   );
+  const [isDeleting, setIsDeleting] = useState(false);
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -31,6 +32,20 @@ export default function EntryForm({ dish, onSubmit }: Props) {
       alert(`Error saving dish: ${err}`);
     } finally {
       setIsLoading(false);
+    }
+  }
+
+  async function handleDelete() {
+    if (!dish) throw new Error('Should not happen');
+    try {
+      setIsLoading(true);
+      await deleteDish(dish.id);
+      onSubmit();
+    } catch (err) {
+      alert(`Error deleting entry: ${err}`);
+    } finally {
+      setIsLoading(false);
+      setIsDeleting(false);
     }
   }
 
@@ -82,13 +97,52 @@ export default function EntryForm({ dish, onSubmit }: Props) {
               />
             </label>
           </div>
-          <div className="add-dish-btn-container">
-            <button type="submit" disabled={isLoading} className="add-dish-btn">
-              {isLoading ? 'Saving...' : 'Save Dish'}
-            </button>
+          <div className="row">
+            <div className="column-full">
+              {dish && (
+                <button
+                  disabled={isLoading}
+                  className="delete-entry-button"
+                  type="button"
+                  onClick={() => setIsDeleting(true)}>
+                  Delete Entry
+                </button>
+              )}
+              <div className="add-dish-btn-container">
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="add-dish-btn">
+                  {isLoading ? 'Saving...' : 'Save Dish'}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </form>
+      {isDeleting && (
+        <div
+          id="modalContainer"
+          className="modal-container d-flex justify-center align-center">
+          <div className="modal row">
+            <div className="column-full d-flex justify-center">
+              <p>Are you sure you want to delete this dish?</p>
+            </div>
+            <div className="column-full d-flex justify-between">
+              <button
+                className="modal-button"
+                onClick={() => setIsDeleting(false)}>
+                Cancel
+              </button>
+              <button
+                className="modal-button red-background white-text"
+                onClick={handleDelete}>
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
