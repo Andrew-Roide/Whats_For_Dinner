@@ -1,0 +1,113 @@
+.nav-bar-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.main-title {
+  font-family: Questrial, sans-serif;
+  color: #3f3f46;
+  cursor: pointer;
+}
+
+.nav-buttons {
+  display: flex;
+  gap: 3rem;
+}
+
+.entries-link {
+  border: none;
+  background-color: white;
+  color: #3f3f46;
+  font-family: Figtree, sans-serif;
+  font-size: 1.5rem;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.page-title {
+  font-family: Questrial, sans-serif;
+  color: #3f3f46;
+  text-align: center;
+}
+
+form {
+  background-color: #eee;
+  border-radius: 10px;
+}
+
+.form-container {
+  display: flex;
+  gap: 3rem;
+  margin: 1rem;
+  padding: 0.5rem;
+}
+
+.form-img {
+  max-width: 40rem;
+  padding: 1rem 0;
+}
+
+.input-half {
+  display: flex;
+  flex-direction: column;
+  padding-top: 2rem;
+  padding-left: 2rem;
+  gap: 3rem;
+}
+
+.label-input {
+  font-size: 1.2rem;
+  border: none;
+  border-bottom: 1px solid gray;
+  background-color: #eee;
+  outline: none;
+  font-family: Figtree, sans-serif;
+}
+
+.label-input::placeholder {
+  color: lightgray;
+}
+
+.add-dish-btn-container {
+  display: flex;
+  align-items: flex-end;
+  padding: 1rem 0 1rem 5rem;
+}
+
+.add-dish-btn {
+  border: none;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #0d6efd;
+  font-family: Figtree, sans-serif;
+  cursor: pointer;
+}
+
+.dishes-ul {
+  list-style: none;
+}
+
+.dish-photo {
+  max-height: 30rem;
+  max-width: 30rem;
+}
+
+.dishes-title,
+.dishes-ingredients,
+.ingredients-list {
+  font-family: Figtree, sans-serif;
+  color: #3f3f46;
+}
+
+.row {
+  display: flex;
+}
+
+.column-half-info {
+  margin-left: 1rem;
+}
+
+.entry-container {
+  padding-bottom: 10rem;
+}

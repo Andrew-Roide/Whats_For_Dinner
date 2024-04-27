@@ -16,6 +16,7 @@ type Entry = {
   title: string;
   ingredientId: number;
   photoUrl: string;
+  tempIngredients: string;
 };
 
 const connectionString =
@@ -47,18 +48,22 @@ app.listen(process.env.PORT, () => {
 app.get('/api/dishes', async (req, res, next) => {
   try {
     const sql = `
-    select "dishes"."id" as "dishId",
-           "dishes"."title",
-           "dishes"."photoUrl",
-           "ingredients"."id" as "ingredientId",
-           "ingredients"."name"
+      select "dishes"."id",
+             "dishes"."title",
+             "dishes"."photoUrl",
+             "dishes"."tempIngredients",
+             JSON_AGG(json_build_object(
+               'ingredientId', "ingredients"."id",
+               'name', "ingredients"."name"
+             )) as "ingredients"
       from "dishes"
-      join "dishIngredients" on "dishes"."id" = "dishIngredients"."dishId"
-      join "ingredients" on "dishIngredients"."ingredientId" = "ingredients"."id"
+      left join "dishIngredients" on "dishes"."id" = "dishIngredients"."dishId"
+      left join "ingredients" on "dishIngredients"."ingredientId" = "ingredients"."id"
+      group by "dishes"."id", "dishes"."title", "dishes"."photoUrl", "dishes"."tempIngredients"
       order by "dishes"."id" desc;
-  `;
+    `;
     const result = await db.query(sql);
-    res.status(201).json(result.rows);
+    res.status(200).json(result.rows);
   } catch (error) {
     next(error);
   }
@@ -66,17 +71,17 @@ app.get('/api/dishes', async (req, res, next) => {
 
 app.post('/api/dishes', async (req, res, next) => {
   try {
-    const { title, photoUrl } = req.body as Partial<Entry>;
+    const { title, photoUrl, tempIngredients } = req.body as Partial<Entry>;
     if (!title || !photoUrl) {
       throw new ClientError(400, 'title and photoUrl are required fields');
     }
 
     const sql = `
-      insert into "dishes" ("title", "photoUrl")
-      values ($1, $2)
+      insert into "dishes" ("title", "photoUrl", "tempIngredients")
+      values ($1, $2, $3)
       returning *;
     `;
-    const params = [title, photoUrl];
+    const params = [title, photoUrl, tempIngredients];
     const result = await db.query<Entry>(sql, params);
     res.status(201).json(result.rows[0]);
   } catch (error) {
@@ -138,10 +143,11 @@ app.post('/api/dishes/:dishId/ingredients', async (req, res, next) => {
 
 app.put('/api/dishes/:id', async (req, res, next) => {
   try {
-    const dishesId = Number(req.params.id);
-    const { title, photoUrl } = req.body as Partial<Entry>;
-    const { name } = req.body;
-    if (!Number.isInteger(dishesId) || !title || !photoUrl) {
+    console.log('request params: ', req);
+    const dishId = Number(req.params.id);
+    console.log(dishId.toString());
+    const { title, photoUrl, tempIngredients } = req.body as Partial<Entry>;
+    if (!Number.isInteger(dishId) || !title || !photoUrl || !tempIngredients) {
       throw new ClientError(
         400,
         'dishesId, title, and photoUrl are required fields'
@@ -151,38 +157,42 @@ app.put('/api/dishes/:id', async (req, res, next) => {
     const sql = `
       update "dishes"
         set "title" = $1,
-            "photoUrl" = $2
-        where "id" = $3
+            "photoUrl" = $2,
+            "tempIngredients" = $3
+        where "id" = $4
         returning *;
     `;
-    const editEntryParams = [title, photoUrl, dishesId];
+    const editEntryParams = [title, photoUrl, tempIngredients, dishId];
     const editEntryResult = await db.query(sql, editEntryParams);
-    const editDishesId = editEntryResult.rows;
+    const [editDishesId] = editEntryResult.rows;
 
-    // find ingredient by name thats being targeted
-    // grab the ingredient id --> delete row in dishIngredients table --> removes the ingredient from the dish
-    const existingIngredient = `
-    select * from "ingredients" where "name" = $1 limit 1;
-  `;
-    const existingIngredientParams = [name];
-    const existingIngredientResult = await db.query<Entry>(
-      existingIngredient,
-      existingIngredientParams
-    );
-    const existingIngredientId = existingIngredientResult.rows[0]?.id;
-    if (existingIngredientId) {
-      const deleteDishIngredientSql = `
-        delete from "dishIngredients"
-          where "dishId" = $1 and "ingredientId" = $2
-      `;
-      const deleteIngredientParams = [dishesId, existingIngredientId];
-      await db.query(deleteDishIngredientSql, deleteIngredientParams);
-    }
-    res.status(201).json(editDishesId[0]);
+    res.status(201).json(editDishesId);
   } catch (error) {
     next(error);
   }
 });
+
+// delete endpoint to remove dishIngredients row by ID (dishIngredient.id)
+
+// find ingredient by name thats being targeted
+// grab the ingredient id --> delete row in dishIngredients table --> removes the ingredient from the dish
+//  const existingIngredient = `
+//     select * from "ingredients" where "name" = $1 limit 1;
+//   `;
+//     const existingIngredientParams = [name];
+//     const existingIngredientResult = await db.query<Entry>(
+//       existingIngredient,
+//       existingIngredientParams
+//     );
+//     const existingIngredientId = existingIngredientResult.rows[0]?.id;
+//     if (existingIngredientId) {
+//       const deleteDishIngredientSql = `
+//         delete from "dishIngredients"
+//           where "dishId" = $1 and "ingredientId" = $2
+//       `;
+//       const deleteIngredientParams = [dishesId, existingIngredientId];
+//       await db.query(deleteDishIngredientSql, deleteIngredientParams);
+//     }
 
 app.delete('/api/dishes/:id', async (req, res, next) => {
   try {

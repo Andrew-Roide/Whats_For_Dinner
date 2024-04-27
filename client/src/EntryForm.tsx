@@ -1,105 +1,91 @@
-// type Entry = {
-//   id: number;
-//   dishId: number;
-//   title: string;
-//   ingredientId: number;
-//   photoUrl: string;
-// };
+import { type FormEvent, useState } from 'react';
+import { Dish } from './EntryList';
+import { addDish, updateDish } from './data';
 
-// type Props = {
-//   entry: Entry | null;
-//   onSubmit: () => void;
-// };
+type Props = {
+  dish: Dish | null;
+  onSubmit: () => void;
+};
 
-export default function EntryForm() {
-  // const [isLoading, setIsLoading] = useState<boolean>();
-  //const [title, setTitle] = useState(entry?.title ?? '');
-  //const [photoUrl, setPhotoUrl] = useState(entry?.photoUrl ?? '');
-  // const [isDeleting, setIsDeleting] = useState(false);
+export default function EntryForm({ dish, onSubmit }: Props) {
+  const [isLoading, setIsLoading] = useState<boolean>();
+  const [title, setTitle] = useState(dish?.title ?? '');
+  const [photoUrl, setPhotoUrl] = useState(dish?.photoUrl ?? '');
+  const [tempIngredients, setTempIngredients] = useState(
+    dish?.tempIngredients ?? ''
+  );
 
-  // async function handleSubmit(event: FormEvent) {
-  //   event.preventDefault();
-  //   const newEntry = { title, photoUrl, notes };
-  //   try {
-  //     setIsLoading(true);
-  //     if (entry) {
-  //       await updateEntry({ ...entry, ...newEntry });
-  //     } else {
-  //       await addEntry(newEntry);
-  //     }
-  //     onSubmit();
-  //   } catch (err) {
-  //     alert(`Error saving changes: ${err}`);
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // }
-
-  // async function handleDelete() {
-  //   if (!entry) throw new Error('Should not happen');
-  //   try {
-  //     setIsLoading(true);
-  //     await removeEntry(entry.entryId);
-  //     onSubmit();
-  //   } catch (err) {
-  //     alert(`Error deleting entry: ${err}`);
-  //   } finally {
-  //     setIsLoading(false);
-  //     setIsDeleting(false);
-  //   }
-  // }
+  async function handleSubmit(event: FormEvent) {
+    event.preventDefault();
+    const newDish = { title, photoUrl, tempIngredients };
+    try {
+      setIsLoading(true);
+      if (dish) {
+        console.log('Dish before fetch call :', dish);
+        await updateDish({ ...dish, ...newDish });
+      } else {
+        await addDish(newDish);
+      }
+      onSubmit();
+    } catch (err) {
+      alert(`Error saving dish: ${err}`);
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   return (
     <div className="container">
       <div className="row">
-        <div className="column-full d-flex justify-between">
-          {/* <h1>{entry ? 'Edit Entry' : 'New Entry'}</h1> */}
-          <h1>Entry</h1>
+        <div className="column-full">
+          <h1 className="page-title">{dish ? 'Edit Dish' : 'New Dish'}</h1>
         </div>
       </div>
-      <form>
-        <div className="row margin-bottom-1">
+      <form onSubmit={handleSubmit}>
+        <div className="form-container">
           <div className="column-half">
             <img
-              className="input-b-radius form-image"
-              src={'images/placeholder-image-square.jpg'}
+              className="form-img"
+              src={photoUrl || 'images/placeholder-image-square.jpg'}
               alt="entry"
             />
           </div>
-          <div className="column-half">
-            <label className="margin-bottom-1 d-block">
-              Title
+          <div className="column-half input-half">
+            <label>
               <input
                 required
-                className="input-b-color text-padding input-b-radius purple-outline input-height margin-bottom-2 d-block width-100"
+                className="label-input"
                 type="text"
-                value="item"
-                // onChange={(e) => setTitle(e.target.value)}
+                value={title}
+                placeholder="Dish Title..."
+                onChange={(e) => setTitle(e.target.value)}
               />
             </label>
-            <label className="margin-bottom-1 d-block">
-              Photo URL
+            <label>
               <input
                 required
-                className="input-b-color text-padding input-b-radius purple-outline input-height margin-bottom-2 d-block width-100"
+                className="label-input"
                 type="text"
-                value={''}
-                // onChange={(e) => setPhotoUrl(e.target.value)}
+                value={photoUrl}
+                placeholder="Dishes Photo..."
+                onChange={(e) => setPhotoUrl(e.target.value)}
+              />
+            </label>
+            <label>
+              <input
+                required
+                className="label-input"
+                type="text"
+                value={tempIngredients}
+                placeholder="Ingredients Used..."
+                onChange={(e) => setTempIngredients(e.target.value)}
               />
             </label>
           </div>
-        </div>
-        <div className="row margin-bottom-1">
-          <div className="column-full">
-            <label className="margin-bottom-1 d-block">
-              Ingredients
-              <textarea
-                required
-                className="input-b-color text-padding input-b-radius purple-outline d-block width-100"
-                value={'notes'}
-                // onChange={(e) => setNotes(e.target.value)}
-              />
-            </label>
+          <div className="add-dish-btn-container">
+            <button type="submit" disabled={isLoading} className="add-dish-btn">
+              {isLoading ? 'Saving...' : 'Save Dish'}
+            </button>
           </div>
         </div>
       </form>

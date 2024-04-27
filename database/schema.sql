@@ -16,8 +16,10 @@ CREATE TABLE "dishes" (
   "userId" integer,
   "title" text,
   "photoUrl" text,
+  "tempIngredients" text,
   "created_at" timestamp,
   "updated_at" timestamp
+
 );
 
 CREATE TABLE "dishIngredients" (
