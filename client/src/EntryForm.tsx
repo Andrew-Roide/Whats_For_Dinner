@@ -1,6 +1,6 @@
 import { type FormEvent, useState } from 'react';
 import { Dish } from './EntryList';
-import { addDish, updateDish } from './data';
+import { addDish, updateDish, deleteDish } from './data';
 
 type Props = {
   dish: Dish | null;

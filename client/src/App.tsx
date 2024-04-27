@@ -14,8 +14,6 @@ export default function App() {
     setPage(page);
     if (page === 'view-dishes') {
       setEditing(undefined);
-      // } else if (page === 'view-dishes') {
-      //   setEditing(undefined);
     }
   }
 

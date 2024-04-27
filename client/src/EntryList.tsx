@@ -87,7 +87,7 @@ type DishProps = {
   onEdit: (entry: Dish) => void;
 };
 
-function Entry({ dish, onEdit, dishId }: DishProps) {
+function Entry({ dish, onEdit }: DishProps) {
   console.log('dish within entry method before return:', dish);
   return (
     <li className="entry-container">
@@ -99,7 +99,7 @@ function Entry({ dish, onEdit, dishId }: DishProps) {
           <div className="row">
             <div>
               <h3 className="dishes-title">{dish.title}</h3>
-              <button onClick={() => onEdit(dish)}>edit dish {dishId}</button>
+              <button onClick={() => onEdit(dish)}>edit dish</button>
             </div>
           </div>
           <p className="ingredients-list">{dish.tempIngredients}</p>
