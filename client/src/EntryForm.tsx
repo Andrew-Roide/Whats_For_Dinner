@@ -1,26 +1,36 @@
 import { type FormEvent, useState } from 'react';
-import { Dishes } from './EntryList';
+import { Dish } from './EntryList';
+import { addDish, updateDish } from './data';
 
 type Props = {
-  entry: Dishes | null | undefined;
+  dish: Dish | null;
   onSubmit: () => void;
 };
 
-export default function EntryForm({ entry, onSubmit }: Props) {
-  // const [isLoading, setIsLoading] = useState<boolean>();
-  const [title, setTitle] = useState(entry?.title ?? '');
-  const [photoUrl, setPhotoUrl] = useState(entry?.photoUrl ?? '');
+export default function EntryForm({ dish, onSubmit }: Props) {
+  const [isLoading, setIsLoading] = useState<boolean>();
+  const [title, setTitle] = useState(dish?.title ?? '');
+  const [photoUrl, setPhotoUrl] = useState(dish?.photoUrl ?? '');
+  const [tempIngredients, setTempIngredients] = useState(
+    dish?.tempIngredients ?? ''
+  );
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
-    // const newEntry = { title, photoUrl };
+    const newDish = { title, photoUrl, tempIngredients };
     try {
-      // setIsLoading(true);
+      setIsLoading(true);
+      if (dish) {
+        console.log('Dish before fetch call :', dish);
+        await updateDish({ ...dish, ...newDish });
+      } else {
+        await addDish(newDish);
+      }
       onSubmit();
     } catch (err) {
-      alert(`Error saving changes: ${err}`);
+      alert(`Error saving dish: ${err}`);
     } finally {
-      // setIsLoading(false);
+      setIsLoading(false);
     }
   }
 
@@ -28,52 +38,54 @@ export default function EntryForm({ entry, onSubmit }: Props) {
     <div className="container">
       <div className="row">
         <div className="column-full">
-          <h1>{entry ? 'Edit Dish' : 'New Dish'}</h1>
-          <h1>Entry</h1>
+          <h1 className="page-title">{dish ? 'Edit Dish' : 'New Dish'}</h1>
         </div>
       </div>
       <form onSubmit={handleSubmit}>
-        <div className="">
+        <div className="form-container">
           <div className="column-half">
             <img
-              className=""
+              className="form-img"
               src={photoUrl || 'images/placeholder-image-square.jpg'}
               alt="entry"
             />
           </div>
-          <div className="column-half">
-            <label className="">
-              Title
+          <div className="column-half input-half">
+            <label>
               <input
                 required
-                className=""
-                type={title}
-                value=""
+                className="label-input"
+                type="text"
+                value={title}
+                placeholder="Dish Title..."
                 onChange={(e) => setTitle(e.target.value)}
               />
             </label>
-            <label className="">
-              Photo URL
+            <label>
               <input
                 required
-                className=""
+                className="label-input"
                 type="text"
                 value={photoUrl}
+                placeholder="Dishes Photo..."
                 onChange={(e) => setPhotoUrl(e.target.value)}
               />
             </label>
-          </div>
-        </div>
-        <div className="row margin-bottom-1">
-          <div className="column-full">
-            <label className="margin-bottom-1 d-block">
-              Ingredients
-              <textarea
+            <label>
+              <input
                 required
-                className=""
-                // value={'Ingredients'}
+                className="label-input"
+                type="text"
+                value={tempIngredients}
+                placeholder="Ingredients Used..."
+                onChange={(e) => setTempIngredients(e.target.value)}
               />
             </label>
+          </div>
+          <div className="add-dish-btn-container">
+            <button type="submit" disabled={isLoading} className="add-dish-btn">
+              {isLoading ? 'Saving...' : 'Save Dish'}
+            </button>
           </div>
         </div>
       </form>

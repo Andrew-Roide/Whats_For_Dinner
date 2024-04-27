@@ -8,10 +8,12 @@ export default function NavBar({ onNavigate }: Props) {
   return (
     <header className="header">
       <div className="container">
-        <div className="row">
-          <div className="column-full">
-            <h1 className="main-title">What's For Dinner</h1>
-            <h3>
+        <div>
+          <div className="column-full nav-bar-container">
+            <h1 className="main-title" onClick={() => onNavigate('home')}>
+              What's For Dinner
+            </h1>
+            <h3 className="nav-buttons">
               <button
                 type="button"
                 onClick={() => onNavigate('home')}
