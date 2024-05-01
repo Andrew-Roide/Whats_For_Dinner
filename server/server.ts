@@ -143,9 +143,7 @@ app.post('/api/dishes/:dishId/ingredients', async (req, res, next) => {
 
 app.put('/api/dishes/:id', async (req, res, next) => {
   try {
-    console.log('request params: ', req);
     const dishId = Number(req.params.id);
-    console.log(dishId.toString());
     const { title, photoUrl, tempIngredients } = req.body as Partial<Entry>;
     if (!Number.isInteger(dishId) || !title || !photoUrl || !tempIngredients) {
       throw new ClientError(

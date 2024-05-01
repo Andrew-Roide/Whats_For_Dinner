@@ -1,4 +1,4 @@
-import { Dish, Ingredients, UnsavedDish } from './EntryList';
+import { Dish, Ingredients, UnsavedDish } from './DishList';
 
 export default async function readDishes(): Promise<Dish[]> {
   const req = {
@@ -46,12 +46,6 @@ export async function updateDish(dish: Dish): Promise<Dish> {
     },
     body: JSON.stringify(dish),
   };
-  console.log(
-    'dishId right before fetch :',
-    dish.id,
-    Number(dish.id),
-    typeof dish.id
-  );
   const res = await fetch(`/api/dishes/${dish.id}`, req);
   console.log('client side fetch call dishId :', dish.id);
   if (!res.ok) throw new Error(`Fetch Error ${res.status}`);
