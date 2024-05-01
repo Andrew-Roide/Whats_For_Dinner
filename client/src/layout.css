@@ -1,14 +1,12 @@
+@media screen and (width >=576px) {
+  .colum-half {
+    flex-basis: 50%;
+  }
+}
+
 @media screen and (width >=768px) {
-  .container {
-    max-width: 900px;
-  }
-
-  .column-full,
-  .column-half {
-    padding: 0 0.75rem;
-  }
-
-  .column-half {
-    width: 50%;
+  .colum-full {
+    flex-basis: calc(100% / 3);
+    flex-basis: 25%;
   }
 }
