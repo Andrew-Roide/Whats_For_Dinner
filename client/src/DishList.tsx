@@ -78,7 +78,7 @@ export default function DishList({ onCreate, onEdit }: Props) {
     <div className="row">
       <div className="container column-full">
         <div className="flex justify-end">
-          <h3 className="m-8 text-xl active:translate-y-0.5">
+          <h3 className="ml-8 mt-8 text-xl active:translate-y-0.5">
             <button type="button" className="" onClick={onCreate}>
               Create A New Dish
             </button>
