@@ -8,7 +8,7 @@ export function errorMiddleware(
   _req: Request,
   res: Response,
   _next: NextFunction
-) {
+): void {
   if (err instanceof ClientError) {
     res.status(err.status).json({ error: err.message });
   } else if (err instanceof jwt.JsonWebTokenError) {
